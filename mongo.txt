@@ -1,0 +1,4 @@
+13.250.119.252
+root
+example
+db workshop

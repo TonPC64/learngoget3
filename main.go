@@ -21,18 +21,20 @@ func main() {
 
 	e.GET("/todos", h.list)
 	e.GET("/todos/:id", h.view)
+	e.PUT("/todos/:id", h.done)
 	e.POST("/todos", h.create)
+	e.DELETE("/todos/:id", h.delete)
 	e.Logger.Fatal(e.Start(":1323"))
-}
-
-type handlers struct {
-	m *mgo.Session
 }
 
 type todo struct {
 	ID    bson.ObjectId `json:"id" bson:"_id"`
 	Topic string        `json:"topic" bson:"topic"`
 	Done  bool          `json:"done" bson:"done"`
+}
+
+type handlers struct {
+	m *mgo.Session
 }
 
 func (h *handlers) create(c echo.Context) error {
@@ -73,4 +75,37 @@ func (h *handlers) view(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, t)
+}
+
+func (h *handlers) done(c echo.Context) error {
+	session := h.m.Copy()
+	defer session.Close()
+
+	id := bson.ObjectIdHex(c.Param("id"))
+
+	var t todo
+	col := session.DB("workshop").C("todos")
+	if err := col.FindId(id).One(&t); err != nil {
+		return err
+	}
+	t.Done = true
+	if err := col.UpdateId(id, t); err != nil {
+		return nil
+	}
+	return c.JSON(http.StatusOK, t)
+}
+
+func (h *handlers) delete(c echo.Context) error {
+	session := h.m.Copy()
+	defer session.Close()
+
+	id := bson.ObjectIdHex(c.Param("id"))
+
+	col := session.DB("workshop").C("todos")
+	if err := col.RemoveId(id); err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"result": "success",
+	})
 }

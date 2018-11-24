@@ -31,7 +31,7 @@ func main() {
 	}
 	h := handlers{session}
 
-	e.GET("/", func (c echo.Context) error {
+	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, echo.Map{
 			"status": "ok",
 		})

@@ -1,19 +1,31 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/spf13/viper"
 )
 
 func main() {
 	e := echo.New()
+
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	mongoHost := viper.GetString("mongo.host")
+	mongoUser := viper.GetString("mongo.user")
+	mongoPass := viper.GetString("mongo.pass")
+	port := ":" + viper.GetString("port")
+
 	e.Use(middleware.Logger())
 
-	session, err := mgo.Dial("localhost")
+	connString := fmt.Sprintf("%s:%s@%s", mongoUser, mongoPass, mongoHost)
+	session, err := mgo.Dial(connString)
 	if err != nil {
 		e.Logger.Fatal(err.Error())
 	}
@@ -24,7 +36,7 @@ func main() {
 	e.PUT("/todos/:id", h.done)
 	e.POST("/todos", h.create)
 	e.DELETE("/todos/:id", h.delete)
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(port))
 }
 
 type todo struct {

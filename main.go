@@ -32,7 +32,7 @@ func main() {
 	h := handlers{session}
 
 	e.GET("/", func (c echo.Context) error {
-		return c.String("ok")
+		return c.String(http.StatusOK, "ok")
 	})
 	e.GET("/todos", h.list)
 	e.GET("/todos/:id", h.view)

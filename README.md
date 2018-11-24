@@ -5,6 +5,9 @@
 ```sh
 heroku login
 heroku create
+heroku config:set MONGO_HOST=<host>
+...
+
 git push heroku master
 ```
 
